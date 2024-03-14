@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Policy;
 using System.Threading;
@@ -34,7 +35,7 @@ namespace QuickerChat.Forms
         /// <summary>
         /// Form for changing keybindings in the program
         /// </summary>
-        //private static readonly ChangeKeybindForm changeKeybindForm = new ChangeKeybindForm();
+        private static ChangeKeybindForm _changeKeybindForm;
 
         private string _textToSpam;
         #endregion
@@ -157,7 +158,13 @@ namespace QuickerChat.Forms
         }
         private void ButtonChangeKeybind_Click(object sender, EventArgs e)
         {
-            //changeKeybindForm.Show();
+            // Disable "_changeKeybindForm"
+            Enabled = false;
+
+            // Create and show "_changeKeybindForm"
+            _changeKeybindForm = new ChangeKeybindForm();
+            _changeKeybindForm.FormClosed += (s, args) => { Enabled = true; }; // Re-enable Form1 when Form2 is closed
+            _changeKeybindForm.Show();
         }
         #endregion
 
@@ -239,6 +246,14 @@ namespace QuickerChat.Forms
             {
                 MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        private void VersionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Get the assembly version
+            AssemblyName assemblyName  = Assembly.GetExecutingAssembly().GetName();
+
+            // Display the version information in a MessageBox
+            MessageBox.Show($"{assemblyName.Name} Version: {assemblyName.Version.Major}.{assemblyName.Version.Minor}.{assemblyName.Version.Build}");
         }
         #endregion
     }

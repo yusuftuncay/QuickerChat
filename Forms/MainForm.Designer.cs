@@ -41,10 +41,12 @@
             this.LabelController = new System.Windows.Forms.Label();
             this.MenuStripMainPage = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.VersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ToolStripSeparator_File = new System.Windows.Forms.ToolStripSeparator();
             this.ExitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.SocialsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.EmailToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.GithubToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.EmailToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.GroupBoxPresets.SuspendLayout();
             this.GroupBoxActions.SuspendLayout();
             this.MenuStripMainPage.SuspendLayout();
@@ -157,7 +159,7 @@
             // 
             // ButtonChangeKeybind
             // 
-            this.ButtonChangeKeybind.Location = new System.Drawing.Point(7, 130);
+            this.ButtonChangeKeybind.Location = new System.Drawing.Point(7, 163);
             this.ButtonChangeKeybind.Name = "ButtonChangeKeybind";
             this.ButtonChangeKeybind.Size = new System.Drawing.Size(294, 27);
             this.ButtonChangeKeybind.TabIndex = 5;
@@ -167,7 +169,7 @@
             // 
             // ButtonCheckController
             // 
-            this.ButtonCheckController.Location = new System.Drawing.Point(8, 95);
+            this.ButtonCheckController.Location = new System.Drawing.Point(8, 97);
             this.ButtonCheckController.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.ButtonCheckController.Name = "ButtonCheckController";
             this.ButtonCheckController.Size = new System.Drawing.Size(292, 27);
@@ -178,12 +180,12 @@
             // 
             // ButtonReset
             // 
-            this.ButtonReset.Location = new System.Drawing.Point(7, 163);
+            this.ButtonReset.Location = new System.Drawing.Point(8, 130);
             this.ButtonReset.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.ButtonReset.Name = "ButtonReset";
-            this.ButtonReset.Size = new System.Drawing.Size(294, 27);
+            this.ButtonReset.Size = new System.Drawing.Size(292, 27);
             this.ButtonReset.TabIndex = 2;
-            this.ButtonReset.Text = "Reset";
+            this.ButtonReset.Text = "Disconnect Controller";
             this.ButtonReset.UseVisualStyleBackColor = true;
             this.ButtonReset.Click += new System.EventHandler(this.ButtonReset_Click);
             // 
@@ -213,15 +215,29 @@
             // FileToolStripMenuItem
             // 
             this.FileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.VersionToolStripMenuItem,
+            this.ToolStripSeparator_File,
             this.ExitToolStripMenuItem});
             this.FileToolStripMenuItem.Name = "FileToolStripMenuItem";
             this.FileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.FileToolStripMenuItem.Text = "File";
             // 
+            // VersionToolStripMenuItem
+            // 
+            this.VersionToolStripMenuItem.Name = "VersionToolStripMenuItem";
+            this.VersionToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.VersionToolStripMenuItem.Text = "Version";
+            this.VersionToolStripMenuItem.Click += new System.EventHandler(this.VersionToolStripMenuItem_Click);
+            // 
+            // ToolStripSeparator_File
+            // 
+            this.ToolStripSeparator_File.Name = "ToolStripSeparator_File";
+            this.ToolStripSeparator_File.Size = new System.Drawing.Size(109, 6);
+            // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.ExitToolStripMenuItem.Text = "Exit";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
@@ -234,19 +250,19 @@
             this.SocialsToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
             this.SocialsToolStripMenuItem.Text = "Socials";
             // 
-            // EmailToolStripMenuItem
-            // 
-            this.EmailToolStripMenuItem.Name = "EmailToolStripMenuItem";
-            this.EmailToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.EmailToolStripMenuItem.Text = "Email";
-            this.EmailToolStripMenuItem.Click += new System.EventHandler(this.EmailToolStripMenuItem_Click);
-            // 
             // GithubToolStripMenuItem
             // 
             this.GithubToolStripMenuItem.Name = "GithubToolStripMenuItem";
-            this.GithubToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.GithubToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
             this.GithubToolStripMenuItem.Text = "Github";
             this.GithubToolStripMenuItem.Click += new System.EventHandler(this.GithubToolStripMenuItem_Click);
+            // 
+            // EmailToolStripMenuItem
+            // 
+            this.EmailToolStripMenuItem.Name = "EmailToolStripMenuItem";
+            this.EmailToolStripMenuItem.Size = new System.Drawing.Size(110, 22);
+            this.EmailToolStripMenuItem.Text = "Email";
+            this.EmailToolStripMenuItem.Click += new System.EventHandler(this.EmailToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -291,5 +307,7 @@
         private System.Windows.Forms.RadioButton RadioButtonPreset4;
         private System.Windows.Forms.ToolStripMenuItem SocialsToolStripMenuItem;
         private System.Windows.Forms.TextBox TextBoxCustom;
+        private System.Windows.Forms.ToolStripMenuItem VersionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator ToolStripSeparator_File;
     }
 }

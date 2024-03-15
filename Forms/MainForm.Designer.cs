@@ -176,7 +176,7 @@
             this.ButtonSearchController.TabIndex = 3;
             this.ButtonSearchController.Text = "Search Controller";
             this.ButtonSearchController.UseVisualStyleBackColor = true;
-            this.ButtonSearchController.Click += new System.EventHandler(this.ButtonCheckController_Click);
+            this.ButtonSearchController.Click += new System.EventHandler(this.ButtonSearchController_Click);
             // 
             // ButtonDisconnectController
             // 
@@ -187,7 +187,7 @@
             this.ButtonDisconnectController.TabIndex = 2;
             this.ButtonDisconnectController.Text = "Disconnect Controller";
             this.ButtonDisconnectController.UseVisualStyleBackColor = true;
-            this.ButtonDisconnectController.Click += new System.EventHandler(this.ButtonReset_Click);
+            this.ButtonDisconnectController.Click += new System.EventHandler(this.ButtonDisconnectController_Click);
             // 
             // LabelController
             // 

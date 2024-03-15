@@ -1,4 +1,4 @@
-﻿using SharpDX.XInput;
+﻿using SharpDX.DirectInput;
 using System;
 using System.ComponentModel;
 using System.Drawing;
@@ -10,14 +10,14 @@ namespace QuickerChat.Forms
     {
         #region Variables
         /// <summary>
-        /// Background worker for continuous _controller polling
+        /// Background worker for continuous _joystick polling
         /// </summary>
         private BackgroundWorker _backgroundWorker;
 
         /// <summary>
         /// XInput controller for capturing controller input
         /// </summary>
-        private readonly Controller _controller;
+        private readonly Joystick _joystick;
 
         /// <summary>
         /// String representing the selected keybind
@@ -26,12 +26,12 @@ namespace QuickerChat.Forms
         #endregion
 
         #region ChangeKeybindForm
-        public ChangeKeybindForm(Controller controller)
+        public ChangeKeybindForm(Joystick joystick)
         {
             InitializeComponent();
-            _controller = controller;
+            _joystick = joystick;
 
-            // Start background worker for continuous _controller polling
+            // Start background worker for continuous _joystick polling
             _backgroundWorker = new BackgroundWorker();
             _backgroundWorker.DoWork += BackgroundWorker_DoWork;
             _backgroundWorker.RunWorkerAsync();
@@ -71,32 +71,42 @@ namespace QuickerChat.Forms
         }
 
         /// <summary>
-        /// Background worker method for _controller polling
+        /// Background worker method for _joystick polling
         /// </summary>
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             //
             LabelKeybindOutput.ForeColor = Color.GreenYellow;
             
-            if (_controller.IsConnected)
-            {
-                // Get the current state of the controller
-                var state = _controller.GetState();
+            //if (_joystick.IsConnected)
+            //{
+            //    // Get the current state of the controller
+            //    var state = _joystick.GetState();
 
-                // Check if any button is pressed
-                if (state.Gamepad.Buttons != GamepadButtonFlags.None)
-                {
-                    // Construct the keybind string using the pressed buttons
-                    _keybind = state.Gamepad.Buttons.ToString();
+            //    // Check if any button is pressed
+            //    if (state.Gamepad.Buttons != GamepadButtonFlags.None)
+            //    {
+            //        // Construct the keybind string using the pressed buttons
+            //        _keybind = state.Gamepad.Buttons.ToString();
 
-                    // Display the keybind in LabelKeybindOutput
-                    LabelKeybindOutput.Text = _keybind;
-                }
-            } else
-            {
-                // Prompt the user to connect a controller
-                MessageBox.Show("Please connect a controller to set the keybind", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            //        // Display the keybind in LabelKeybindOutput
+            //        LabelKeybindOutput.Text = _keybind;
+            //    }
+            //} else
+            //{
+            //    // Prompt the user to connect a controller
+            //    MessageBox.Show("Please connect a controller to set the keybind", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            //}
         }
+
+        //public bool IsKeyPress(Keys key)
+        //{
+        //    bool isCurrentlyPressed = WaveServices.Input.KeyboardState.IsKeyPressed(key);
+        //    bool previouslyReleased = this.previousKeyStates[key] == ButtonState.Release;
+
+        //    this.previousKeyStates[key] = isCurrentlyPressed ? ButtonState.Pressed : ButtonState.Release;
+
+        //    return isCurrentlyPressed && previouslyReleased;
+        //}
     }
 }

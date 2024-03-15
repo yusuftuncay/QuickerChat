@@ -1,10 +1,8 @@
 ﻿using SharpDX.DirectInput;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -48,7 +46,7 @@ namespace QuickerChat.Forms
         /// <summary>
         /// String representing the selected keybind
         /// </summary>
-        public static string Keybind { get; internal set; }
+        public static string[] Keybind { get; internal set; } = new string[2];
         #endregion
 
         #region MainForm
@@ -93,6 +91,7 @@ namespace QuickerChat.Forms
                     ButtonDisconnectController.Enabled = true;
                     ButtonChangeKeybind.Enabled = true;
                     _isBackgroundWorkerLoop = true;
+                    _textToSpam = RadioButtonPreset1.Text;
                 }
                 else
                 {
@@ -108,7 +107,7 @@ namespace QuickerChat.Forms
                 }
 
                 // Acquire the _joystick
-                _joystick.Properties.BufferSize = 128;
+                _joystick.Properties.BufferSize = 16;
                 _joystick.Acquire();
 
                 // Start a background worker to continuously poll the controller
@@ -133,10 +132,38 @@ namespace QuickerChat.Forms
                     // Get the current state
                     JoystickState state = _joystick.GetCurrentState();
 
-                    bool circleButtonPressed = state.Buttons[0]; // SQUARE
-                    bool squareButtonPressed = state.Buttons[2]; // CIRCLE
+                    // DPad
+                    bool dPadUpPressed = state.PointOfViewControllers[0] == 0;
+                    bool dPadRightPressed = state.PointOfViewControllers[0] == 9000;
+                    bool dPadDownPressed = state.PointOfViewControllers[0] == 18000;
+                    bool dPadLeftPressed = state.PointOfViewControllers[0] == 27000;
 
-                    if (circleButtonPressed && squareButtonPressed)
+                    // Symbol
+                    bool squarePressed = state.Buttons[0];
+                    bool crossPressed = state.Buttons[1];
+                    bool circlePressed = state.Buttons[2];
+                    bool trianglePressed = state.Buttons[3];
+
+                    // Trigger
+                    bool L1Pressed = state.Buttons[4];
+                    bool R1Pressed = state.Buttons[5];
+                    bool L2Pressed = state.Buttons[6];
+                    bool R2Pressed = state.Buttons[7];
+
+                    // Share & Start
+                    bool sharePressed = state.Buttons[8];
+                    bool startPressed = state.Buttons[9];
+
+                    // Joystick Buttons
+                    bool L3Pressed = state.Buttons[10];
+                    bool R3Pressed = state.Buttons[11];
+
+                    // Rest
+                    bool PSPressed = state.Buttons[12];
+                    bool touchpadPressed = state.Buttons[13];
+                    bool mutePressed = state.Buttons[14];
+
+                    if (Keybind[0] != null && Keybind[1] != null)
                     {
                         StartSpam();
                         Thread.Sleep(200);
@@ -158,16 +185,16 @@ namespace QuickerChat.Forms
             try
             {
                 // Find the Rocket League process
-                var process = Process.GetProcessesByName("RocketLeague").FirstOrDefault();
+                //var process = Process.GetProcessesByName("RocketLeague").FirstOrDefault();
 
-                if (process == null)
-                    return;
+                //if (process == null)
+                //    return;
 
-                // Wait for process to be ready for input
-                process.WaitForInputIdle();
+                //// Wait for process to be ready for input
+                //process.WaitForInputIdle();
 
-                // Set focus to Rocket League window (to be sure)
-                SetForegroundWindow(process.MainWindowHandle);
+                //// Set focus to Rocket League window (to be sure)
+                //SetForegroundWindow(process.MainWindowHandle);
 
                 // Send key presses
                 for (var i = 0; i < 3; i++)
@@ -187,11 +214,14 @@ namespace QuickerChat.Forms
         }
         private void ButtonChangeKeybind_Click(object sender, EventArgs e)
         {
-            // Disable "_changeKeybindForm"
+            // Stop Loop
+            _isBackgroundWorkerLoop = false;
+
+            // Disable Form2
             Enabled = false;
 
             // Open keybind change form
-            _changeKeybindForm = new ChangeKeybindForm(_joystick);
+            _changeKeybindForm = new ChangeKeybindForm();
             _changeKeybindForm.FormClosed += (s, args) => { Enabled = true; }; // Re-enable main form when KeybindForm is closed
             _changeKeybindForm.Show();
         }
@@ -256,6 +286,7 @@ namespace QuickerChat.Forms
 
             // Reset preset selection
             RadioButtonPreset1.Checked = true;
+            _textToSpam = RadioButtonPreset1.Text;
         }
         #endregion
 

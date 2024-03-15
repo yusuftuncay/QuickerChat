@@ -1,7 +1,4 @@
-﻿using SharpDX.DirectInput;
-using System;
-using System.ComponentModel;
-using System.Drawing;
+﻿using System;
 using System.Windows.Forms;
 
 namespace QuickerChat.Forms
@@ -10,103 +7,85 @@ namespace QuickerChat.Forms
     {
         #region Variables
         /// <summary>
-        /// Background worker for continuous _joystick polling
-        /// </summary>
-        private BackgroundWorker _backgroundWorker;
-
-        /// <summary>
-        /// XInput controller for capturing controller input
-        /// </summary>
-        private readonly Joystick _joystick;
-
-        /// <summary>
         /// String representing the selected keybind
         /// </summary>
-        private string _keybind;
+        private static string[] Keybind { get; set; } = new string[2];
+
+        /// <summary>
+        /// Define an integer variable to keep track of the number of clicks
+        /// </summary>
+        private int clickCount = 0;
         #endregion
 
         #region ChangeKeybindForm
-        public ChangeKeybindForm(Joystick joystick)
+        public ChangeKeybindForm()
         {
             InitializeComponent();
-            _joystick = joystick;
-
-            // Start background worker for continuous _joystick polling
-            _backgroundWorker = new BackgroundWorker();
-            _backgroundWorker.DoWork += BackgroundWorker_DoWork;
-            _backgroundWorker.RunWorkerAsync();
+        }
+        private void ChangeKeybindForm_Load(object sender, EventArgs e)
+        {
+            if (Keybind[0] != null && Keybind[1] != null)
+            {
+                LabelInfo.Text = $"{Keybind[0]} + {Keybind[1]}";
+            }
+            else
+            {
+                LabelInfo.Text = "...";
+            }
         }
         #endregion
 
-        private void ChangeKeybindForm_Load(object sender, EventArgs e)
-        {
-            // Display instructions to the user using a message box
-            LabelInfo.Text = "Press the desired key combination on your controller to set the keybind";
-        }
-
+        #region Click
         private void ButtonSave_Click(object sender, EventArgs e)
         {
             // Check if a keybind has been set
-            if (!string.IsNullOrEmpty(_keybind))
+            if (Keybind != null && Keybind[0] != null && Keybind[1] != null)
             {
                 // Set the keybind in MainForm using a static property
-                MainForm.Keybind = _keybind;
+                MainForm.Keybind = Keybind;
 
-                // Display the selected keybind in LabelKeybindOutput
-                LabelKeybindOutput.Text = _keybind;
+                Close();
             } else
             {
                 // Prompt the user to select a keybind
                 MessageBox.Show("Please select a keybind first", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-
         private void ButtonReset_Click(object sender, EventArgs e)
         {
-            // Reset the keybind
-            _keybind = null;
-
-            // Clear the label displaying the keybind
-            LabelKeybindOutput.Text = "...";
+            Keybind = new string[2];
+            LabelInfo.Text = "...";
+            clickCount = 0;
         }
-
-        /// <summary>
-        /// Background worker method for _joystick polling
-        /// </summary>
-        private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void Button_Click(object sender, EventArgs e)
         {
-            //
-            LabelKeybindOutput.ForeColor = Color.GreenYellow;
-            
-            //if (_joystick.IsConnected)
-            //{
-            //    // Get the current state of the controller
-            //    var state = _joystick.GetState();
+            string buttonName = ((Label)sender).Name;
 
-            //    // Check if any button is pressed
-            //    if (state.Gamepad.Buttons != GamepadButtonFlags.None)
-            //    {
-            //        // Construct the keybind string using the pressed buttons
-            //        _keybind = state.Gamepad.Buttons.ToString();
+            // Increment the click count
+            clickCount++;
 
-            //        // Display the keybind in LabelKeybindOutput
-            //        LabelKeybindOutput.Text = _keybind;
-            //    }
-            //} else
-            //{
-            //    // Prompt the user to connect a controller
-            //    MessageBox.Show("Please connect a controller to set the keybind", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //}
+            if (buttonName == LabelInfo.Text)
+            {
+                clickCount = 1;
+                return;
+            }
+
+            if (clickCount == 1)
+            {
+                LabelInfo.Text = buttonName;
+                Keybind[0] = buttonName;
+            }
+            else if (clickCount == 2)
+            {
+                // Append the button name with a "+", if not already present
+                if (!LabelInfo.Text.EndsWith(" + ") && !LabelInfo.Text.EndsWith(buttonName))
+                {
+                    LabelInfo.Text += " + " + buttonName;
+                    Keybind[1] = buttonName;
+                    clickCount = 0;
+                }
+            }
         }
-
-        //public bool IsKeyPress(Keys key)
-        //{
-        //    bool isCurrentlyPressed = WaveServices.Input.KeyboardState.IsKeyPressed(key);
-        //    bool previouslyReleased = this.previousKeyStates[key] == ButtonState.Release;
-
-        //    this.previousKeyStates[key] = isCurrentlyPressed ? ButtonState.Pressed : ButtonState.Release;
-
-        //    return isCurrentlyPressed && previouslyReleased;
-        //}
+        #endregion
     }
 }

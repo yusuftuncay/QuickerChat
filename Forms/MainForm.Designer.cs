@@ -36,8 +36,8 @@
             this.TextBoxCustom = new System.Windows.Forms.TextBox();
             this.GroupBoxActions = new System.Windows.Forms.GroupBox();
             this.ButtonChangeKeybind = new System.Windows.Forms.Button();
-            this.ButtonCheckController = new System.Windows.Forms.Button();
-            this.ButtonReset = new System.Windows.Forms.Button();
+            this.ButtonSearchController = new System.Windows.Forms.Button();
+            this.ButtonDisconnectController = new System.Windows.Forms.Button();
             this.LabelController = new System.Windows.Forms.Label();
             this.MenuStripMainPage = new System.Windows.Forms.MenuStrip();
             this.FileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -145,8 +145,8 @@
             // GroupBoxActions
             // 
             this.GroupBoxActions.Controls.Add(this.ButtonChangeKeybind);
-            this.GroupBoxActions.Controls.Add(this.ButtonCheckController);
-            this.GroupBoxActions.Controls.Add(this.ButtonReset);
+            this.GroupBoxActions.Controls.Add(this.ButtonSearchController);
+            this.GroupBoxActions.Controls.Add(this.ButtonDisconnectController);
             this.GroupBoxActions.Controls.Add(this.LabelController);
             this.GroupBoxActions.Location = new System.Drawing.Point(13, 253);
             this.GroupBoxActions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -167,27 +167,27 @@
             this.ButtonChangeKeybind.UseVisualStyleBackColor = true;
             this.ButtonChangeKeybind.Click += new System.EventHandler(this.ButtonChangeKeybind_Click);
             // 
-            // ButtonCheckController
+            // ButtonSearchController
             // 
-            this.ButtonCheckController.Location = new System.Drawing.Point(8, 97);
-            this.ButtonCheckController.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.ButtonCheckController.Name = "ButtonCheckController";
-            this.ButtonCheckController.Size = new System.Drawing.Size(292, 27);
-            this.ButtonCheckController.TabIndex = 3;
-            this.ButtonCheckController.Text = "Search Controller";
-            this.ButtonCheckController.UseVisualStyleBackColor = true;
-            this.ButtonCheckController.Click += new System.EventHandler(this.ButtonCheckController_Click);
+            this.ButtonSearchController.Location = new System.Drawing.Point(8, 97);
+            this.ButtonSearchController.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.ButtonSearchController.Name = "ButtonSearchController";
+            this.ButtonSearchController.Size = new System.Drawing.Size(292, 27);
+            this.ButtonSearchController.TabIndex = 3;
+            this.ButtonSearchController.Text = "Search Controller";
+            this.ButtonSearchController.UseVisualStyleBackColor = true;
+            this.ButtonSearchController.Click += new System.EventHandler(this.ButtonCheckController_Click);
             // 
-            // ButtonReset
+            // ButtonDisconnectController
             // 
-            this.ButtonReset.Location = new System.Drawing.Point(8, 130);
-            this.ButtonReset.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.ButtonReset.Name = "ButtonReset";
-            this.ButtonReset.Size = new System.Drawing.Size(292, 27);
-            this.ButtonReset.TabIndex = 2;
-            this.ButtonReset.Text = "Disconnect Controller";
-            this.ButtonReset.UseVisualStyleBackColor = true;
-            this.ButtonReset.Click += new System.EventHandler(this.ButtonReset_Click);
+            this.ButtonDisconnectController.Location = new System.Drawing.Point(8, 130);
+            this.ButtonDisconnectController.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.ButtonDisconnectController.Name = "ButtonDisconnectController";
+            this.ButtonDisconnectController.Size = new System.Drawing.Size(292, 27);
+            this.ButtonDisconnectController.TabIndex = 2;
+            this.ButtonDisconnectController.Text = "Disconnect Controller";
+            this.ButtonDisconnectController.UseVisualStyleBackColor = true;
+            this.ButtonDisconnectController.Click += new System.EventHandler(this.ButtonReset_Click);
             // 
             // LabelController
             // 
@@ -225,19 +225,19 @@
             // VersionToolStripMenuItem
             // 
             this.VersionToolStripMenuItem.Name = "VersionToolStripMenuItem";
-            this.VersionToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.VersionToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.VersionToolStripMenuItem.Text = "Version";
             this.VersionToolStripMenuItem.Click += new System.EventHandler(this.VersionToolStripMenuItem_Click);
             // 
             // ToolStripSeparator_File
             // 
             this.ToolStripSeparator_File.Name = "ToolStripSeparator_File";
-            this.ToolStripSeparator_File.Size = new System.Drawing.Size(109, 6);
+            this.ToolStripSeparator_File.Size = new System.Drawing.Size(177, 6);
             // 
             // ExitToolStripMenuItem
             // 
             this.ExitToolStripMenuItem.Name = "ExitToolStripMenuItem";
-            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
+            this.ExitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.ExitToolStripMenuItem.Text = "Exit";
             this.ExitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
             // 
@@ -290,8 +290,8 @@
         #endregion
 
         private System.Windows.Forms.Button ButtonChangeKeybind;
-        private System.Windows.Forms.Button ButtonCheckController;
-        private System.Windows.Forms.Button ButtonReset;
+        private System.Windows.Forms.Button ButtonSearchController;
+        private System.Windows.Forms.Button ButtonDisconnectController;
         private System.Windows.Forms.ToolStripMenuItem EmailToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem ExitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem FileToolStripMenuItem;

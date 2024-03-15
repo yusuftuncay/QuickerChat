@@ -1,5 +1,4 @@
-﻿#region Using
-using SharpDX.XInput;
+﻿using SharpDX.XInput;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -9,7 +8,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
-#endregion
 
 namespace QuickerChat.Forms
 {
@@ -17,29 +15,34 @@ namespace QuickerChat.Forms
     {
         #region Variables
         /// <summary>
-        /// Background worker for continuous controller polling
+        /// Background worker for continuous _controller polling
         /// </summary>
-        private BackgroundWorker backgroundWorker;
+        private BackgroundWorker _backgroundWorker;
 
         /// <summary>
-        /// XInput controller for handling controller input
+        /// XInput _controller for handling _controller input
         /// </summary>
-        private Controller controller;
+        private Controller _controller;
 
         /// <summary>
         /// Flag indicating whether the background worker loop is running
         /// </summary>
-        private bool isBackgroundWorkerLoop;
+        private bool _isBackgroundWorkerLoop;
 
         /// <summary>
         /// Form for changing keybindings
         /// </summary>
-        private static ChangeKeybindForm changeKeybindForm;
+        private static ChangeKeybindForm _changeKeybindForm;
 
         /// <summary>
         /// Text to be used for spamming
         /// </summary>
-        private string textToSpam;
+        private string _textToSpam;
+
+        /// <summary>
+        /// String representing the selected keybind
+        /// </summary>
+        public static string Keybind { get; internal set; }
         #endregion
 
         #region MainForm
@@ -57,7 +60,7 @@ namespace QuickerChat.Forms
 
         #region Controller Methods
         /// <summary>
-        /// Initialize the controller and start the background worker
+        /// Initialize the _controller and start the background worker
         /// </summary>
         private void InitializeController()
         {
@@ -65,45 +68,45 @@ namespace QuickerChat.Forms
             LabelController.Text = "";
             LabelController.ForeColor = Color.Yellow;
 
-            // Initialize XInput controller
-            controller = new Controller(UserIndex.One);
+            // Initialize XInput _controller
+            _controller = new Controller(UserIndex.One);
 
-            // Check if controller is connected
-            if (controller.IsConnected)
+            // Check if _controller is connected
+            if (_controller.IsConnected)
             {
-                LabelController.Text = $"Controller Connected\n{controller}";
+                LabelController.Text = $"Controller Connected\n{_controller}";
                 LabelController.ForeColor = Color.Green;
                 GroupBoxPresets.Enabled = true;
-                ButtonCheckController.Enabled = false;
-                ButtonReset.Enabled = true;
-                isBackgroundWorkerLoop = true;
+                ButtonSearchController.Enabled = false;
+                ButtonDisconnectController.Enabled = true;
+                ButtonChangeKeybind.Enabled = true;
+                _isBackgroundWorkerLoop = true;
             } else
             {
-                LabelController.Text = "No Controller Connected";
+                LabelController.Text = "No Controller Found";
                 LabelController.ForeColor = Color.Red;
                 GroupBoxPresets.Enabled = false;
-                ButtonCheckController.Enabled = true;
-                ButtonReset.Enabled = false;
-                isBackgroundWorkerLoop = false;
+                ButtonSearchController.Enabled = true;
+                ButtonDisconnectController.Enabled = false;
+                ButtonChangeKeybind.Enabled = false;
+                _isBackgroundWorkerLoop = false;
                 return;
             }
 
-            // Start background worker for continuous controller polling
-            backgroundWorker = new BackgroundWorker();
-            backgroundWorker.DoWork += BackgroundWorker_DoWork;
-            backgroundWorker.RunWorkerAsync();
+            // Start background worker for continuous _controller polling
+            _backgroundWorker = new BackgroundWorker();
+            _backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            _backgroundWorker.RunWorkerAsync();
         }
         /// <summary>
-        /// Background worker method for continuous controller polling
+        /// Background worker method for continuous _controller polling
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (isBackgroundWorkerLoop)
+            while (_isBackgroundWorkerLoop)
             {
-                // Get current state of the controller
-                var state = controller.GetState();
+                // Get current state of the _controller
+                var state = _controller.GetState();
 
                 // Check if the correct button combination is pressed
                 bool circleButtonPressed = (state.Gamepad.Buttons & GamepadButtonFlags.A) != 0;
@@ -140,7 +143,7 @@ namespace QuickerChat.Forms
 
                 // Send key presses
                 for (var i = 0; i < 3; i++)
-                    SendKeys.SendWait($"T{textToSpam}{{ENTER}}");
+                    SendKeys.SendWait($"T{_textToSpam}{{ENTER}}");
             } catch (Exception) { }
         }
         #endregion
@@ -156,13 +159,13 @@ namespace QuickerChat.Forms
         }
         private void ButtonChangeKeybind_Click(object sender, EventArgs e)
         {
-            // Disable "changeKeybindForm"
+            // Disable "_changeKeybindForm"
             Enabled = false;
 
             // Open keybind change form
-            changeKeybindForm = new ChangeKeybindForm();
-            changeKeybindForm.FormClosed += (s, args) => { Enabled = true; }; // Re-enable main form when KeybindForm is closed
-            changeKeybindForm.Show();
+            _changeKeybindForm = new ChangeKeybindForm(_controller);
+            _changeKeybindForm.FormClosed += (s, args) => { Enabled = true; }; // Re-enable main form when KeybindForm is closed
+            _changeKeybindForm.Show();
         }
         #endregion
 
@@ -172,17 +175,17 @@ namespace QuickerChat.Forms
             // Check for custom input
             if (RadioButtonCustomPreset.Checked)
             {
-                textToSpam = null;
+                _textToSpam = null;
                 TextBoxCustom.Enabled = true;
             } else
             {
-                textToSpam = ((RadioButton)sender).Text;
+                _textToSpam = ((RadioButton)sender).Text;
                 TextBoxCustom.Enabled = false;
             }
         }
         private void TextBoxCustom_TextChanged(object sender, EventArgs e)
         {
-            textToSpam = TextBoxCustom.Text;
+            _textToSpam = TextBoxCustom.Text;
         }
         #endregion
 
@@ -192,21 +195,21 @@ namespace QuickerChat.Forms
         /// </summary>
         private void CleanStates()
         {
-            isBackgroundWorkerLoop = false;
+            _isBackgroundWorkerLoop = false;
 
             // Dispose background worker
-            if (backgroundWorker != null)
+            if (_backgroundWorker != null)
             {
-                backgroundWorker.DoWork -= BackgroundWorker_DoWork;
-                backgroundWorker.Dispose();
-                backgroundWorker = null;
+                _backgroundWorker.DoWork -= BackgroundWorker_DoWork;
+                _backgroundWorker.Dispose();
+                _backgroundWorker = null;
             }
 
-            // Dispose controller
-            if (controller != null)
+            // Dispose _controller
+            if (_controller != null)
             {
-                //controller.Dispose();
-                controller = null;
+                //_controller.Dispose();
+                _controller = null;
             }
 
             // Update UI labels
@@ -219,6 +222,14 @@ namespace QuickerChat.Forms
         #endregion
 
         #region MenuStrip MainPage
+        private void VersionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Get the assembly version
+            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
+
+            // Display the version information in a MessageBox
+            MessageBox.Show($"{assemblyName.Name} Version: {assemblyName.Version.Major}.{assemblyName.Version.Minor}.{assemblyName.Version.Build}");
+        }
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Dispose(true);
@@ -240,14 +251,6 @@ namespace QuickerChat.Forms
             {
                 MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-        private void VersionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // Get the assembly version
-            AssemblyName assemblyName  = Assembly.GetExecutingAssembly().GetName();
-
-            // Display the version information in a MessageBox
-            MessageBox.Show($"{assemblyName.Name} Version: {assemblyName.Version.Major}.{assemblyName.Version.Minor}.{assemblyName.Version.Build}");
         }
         #endregion
     }

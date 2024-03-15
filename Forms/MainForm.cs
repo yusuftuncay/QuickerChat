@@ -1,5 +1,5 @@
 ﻿#region Using
-using SharpDX.DirectInput;
+using SharpDX.XInput;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Policy;
 using System.Threading;
 using System.Windows.Forms;
 #endregion
@@ -18,26 +17,29 @@ namespace QuickerChat.Forms
     {
         #region Variables
         /// <summary>
-        /// Initializes the program by setting up a background worker to read _joystick polls in the background
+        /// Background worker for continuous controller polling
         /// </summary>
-        private BackgroundWorker _backgroundWorker;
+        private BackgroundWorker backgroundWorker;
 
         /// <summary>
-        /// Represents a _joystick device for input control
+        /// XInput controller for handling controller input
         /// </summary>
-        private Joystick _joystick;
+        private Controller controller;
 
         /// <summary>
-        /// Controls the loop of the background worker, allowing for starting and stopping
+        /// Flag indicating whether the background worker loop is running
         /// </summary>
-        private bool _isBackgroundWorkerLoop;
+        private bool isBackgroundWorkerLoop;
 
         /// <summary>
-        /// Form for changing keybindings in the program
+        /// Form for changing keybindings
         /// </summary>
-        private static ChangeKeybindForm _changeKeybindForm;
+        private static ChangeKeybindForm changeKeybindForm;
 
-        private string _textToSpam;
+        /// <summary>
+        /// Text to be used for spamming
+        /// </summary>
+        private string textToSpam;
         #endregion
 
         #region MainForm
@@ -48,81 +50,78 @@ namespace QuickerChat.Forms
         }
         #endregion
 
-        #region Import DLL
+        #region DLL Import
         [DllImport("user32.dll")]
         public static extern bool SetForegroundWindow(IntPtr hWnd);
         #endregion
 
         #region Controller Methods
+        /// <summary>
+        /// Initialize the controller and start the background worker
+        /// </summary>
         private void InitializeController()
         {
+            // Initialize UI labels
             LabelController.Text = "";
             LabelController.ForeColor = Color.Yellow;
 
-            try
+            // Initialize XInput controller
+            controller = new Controller(UserIndex.One);
+
+            // Check if controller is connected
+            if (controller.IsConnected)
             {
-                using (var directInput = new DirectInput())
-                {
-                    // Get First Joystick
-                    foreach (var deviceInstance in directInput.GetDevices(DeviceClass.Keyboard, DeviceEnumerationFlags.AllDevices))
-                    {
-                        _joystick = new Joystick(directInput, deviceInstance.InstanceGuid);
-                        break;
-                    }
-                }
+                LabelController.Text = $"Controller Connected\n{controller}";
+                LabelController.ForeColor = Color.Green;
+                GroupBoxPresets.Enabled = true;
+                ButtonCheckController.Enabled = false;
+                ButtonReset.Enabled = true;
+                isBackgroundWorkerLoop = true;
+            } else
+            {
+                LabelController.Text = "No Controller Connected";
+                LabelController.ForeColor = Color.Red;
+                GroupBoxPresets.Enabled = false;
+                ButtonCheckController.Enabled = true;
+                ButtonReset.Enabled = false;
+                isBackgroundWorkerLoop = false;
+                return;
+            }
 
-                if (_joystick != null)
-                {
-                    LabelController.Text = $"Controller Connected\n{_joystick}";
-                    LabelController.ForeColor = Color.Green;
-
-                    // Enable Presets and BgWorker Loop
-                    GroupBoxPresets.Enabled = true;
-                    _isBackgroundWorkerLoop = true;
-                } else
-                {
-                    LabelController.Text = "No Controller Connected";
-                    LabelController.ForeColor = Color.Red;
-
-                    // Disable Presets and BgWorker Loop
-                    GroupBoxPresets.Enabled = false;
-                    _isBackgroundWorkerLoop = false;
-                    return;
-                }
-
-                // Acquire the _joystick
-                _joystick.Properties.BufferSize = 128;
-                _joystick.Acquire();
-
-                // Start a background worker to continuously poll the controller
-                _backgroundWorker = new BackgroundWorker();
-                _backgroundWorker.DoWork += BackgroundWorker_DoWork;
-                _backgroundWorker.RunWorkerAsync();
-            } catch (Exception) { }
+            // Start background worker for continuous controller polling
+            backgroundWorker = new BackgroundWorker();
+            backgroundWorker.DoWork += BackgroundWorker_DoWork;
+            backgroundWorker.RunWorkerAsync();
         }
+        /// <summary>
+        /// Background worker method for continuous controller polling
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (_isBackgroundWorkerLoop)
+            while (isBackgroundWorkerLoop)
             {
-                _joystick.Poll();
-                JoystickState data = _joystick.GetCurrentState();
+                // Get current state of the controller
+                var state = controller.GetState();
 
-                // Check button presses
-                bool circleButtonPressed = data.Buttons[2]; // Circle
+                // Check if the correct button combination is pressed
+                bool circleButtonPressed = (state.Gamepad.Buttons & GamepadButtonFlags.A) != 0;
+                bool dPadUpButtonPressed = (state.Gamepad.Buttons & GamepadButtonFlags.DPadUp) != 0;
 
-                if (circleButtonPressed)
+                if (circleButtonPressed && dPadUpButtonPressed)
                 {
                     StartSpam();
                     Thread.Sleep(200);
                 }
 
+                // Polling interval
                 Thread.Sleep(10);
             }
         }
         #endregion
 
         #region Spam Methods
-
         private void StartSpam()
         {
             try
@@ -133,16 +132,15 @@ namespace QuickerChat.Forms
                 if (process == null)
                     return;
 
-                // Wait
+                // Wait for process to be ready for input
                 process.WaitForInputIdle();
 
-                // Focus on Rocket League
+                // Set focus to Rocket League window (to be sure)
                 SetForegroundWindow(process.MainWindowHandle);
 
-                // Spam 3 times
+                // Send key presses
                 for (var i = 0; i < 3; i++)
-                    SendKeys.SendWait($"T{_textToSpam}{{ENTER}}");
-
+                    SendKeys.SendWait($"T{textToSpam}{{ENTER}}");
             } catch (Exception) { }
         }
         #endregion
@@ -158,13 +156,13 @@ namespace QuickerChat.Forms
         }
         private void ButtonChangeKeybind_Click(object sender, EventArgs e)
         {
-            // Disable "_changeKeybindForm"
+            // Disable "changeKeybindForm"
             Enabled = false;
 
-            // Create and show "_changeKeybindForm"
-            _changeKeybindForm = new ChangeKeybindForm();
-            _changeKeybindForm.FormClosed += (s, args) => { Enabled = true; }; // Re-enable Form1 when Form2 is closed
-            _changeKeybindForm.Show();
+            // Open keybind change form
+            changeKeybindForm = new ChangeKeybindForm();
+            changeKeybindForm.FormClosed += (s, args) => { Enabled = true; }; // Re-enable main form when KeybindForm is closed
+            changeKeybindForm.Show();
         }
         #endregion
 
@@ -174,52 +172,48 @@ namespace QuickerChat.Forms
             // Check for custom input
             if (RadioButtonCustomPreset.Checked)
             {
-                // Set "_textToSpam" property
-                _textToSpam = null;
+                textToSpam = null;
                 TextBoxCustom.Enabled = true;
             } else
             {
-                // Set "_textToSpam" property
-                _textToSpam = ((RadioButton)sender).Text;
+                textToSpam = ((RadioButton)sender).Text;
                 TextBoxCustom.Enabled = false;
             }
         }
         private void TextBoxCustom_TextChanged(object sender, EventArgs e)
         {
-            // Set "_textToSpam" property
-            _textToSpam = TextBoxCustom.Text;
+            textToSpam = TextBoxCustom.Text;
         }
         #endregion
 
         #region Dispose
         /// <summary>
-        /// Dispose Managed Resources
+        /// Dispose managed resources
         /// </summary>
         private void CleanStates()
         {
-            // BgWorker
-            if (_backgroundWorker != null)
-            {
-                // Stop Loop
-                _isBackgroundWorkerLoop = false;
+            isBackgroundWorkerLoop = false;
 
-                _backgroundWorker.DoWork -= BackgroundWorker_DoWork;
-                _backgroundWorker.Dispose();
-                _backgroundWorker = null;
+            // Dispose background worker
+            if (backgroundWorker != null)
+            {
+                backgroundWorker.DoWork -= BackgroundWorker_DoWork;
+                backgroundWorker.Dispose();
+                backgroundWorker = null;
             }
 
-            // Joystick
-            if (_joystick != null)
+            // Dispose controller
+            if (controller != null)
             {
-                _joystick.Dispose();
-                _joystick = null;
+                //controller.Dispose();
+                controller = null;
             }
 
-            // Label
+            // Update UI labels
             LabelController.Text = "No Controller Connected";
             LabelController.ForeColor = Color.Red;
 
-            // RadioButton
+            // Reset preset selection
             RadioButtonPreset1.Checked = true;
         }
         #endregion

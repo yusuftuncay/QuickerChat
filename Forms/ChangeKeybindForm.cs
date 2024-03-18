@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace QuickerChat.Forms
@@ -9,7 +10,7 @@ namespace QuickerChat.Forms
         /// <summary>
         /// String representing the selected keybind
         /// </summary>
-        private static string[] Keybind { get; set; } = new string[2];
+        private static string[] Keybind { get; set; }
 
         /// <summary>
         /// Define an integer variable to keep track of the number of clicks
@@ -24,13 +25,15 @@ namespace QuickerChat.Forms
         }
         private void ChangeKeybindForm_Load(object sender, EventArgs e)
         {
+            Keybind = MainForm.Keybind;
+
             if (Keybind[0] != null && Keybind[1] != null)
             {
                 LabelInfo.Text = $"{Keybind[0]} + {Keybind[1]}";
             }
             else
             {
-                LabelInfo.Text = "...";
+                LabelInfo.Text = "No Keybind Set";
             }
         }
         #endregion
@@ -54,26 +57,24 @@ namespace QuickerChat.Forms
         private void ButtonReset_Click(object sender, EventArgs e)
         {
             Keybind = new string[2];
-            LabelInfo.Text = "...";
+            LabelInfo.Text = "No Keybind Set";
             clickCount = 0;
         }
         private void Button_Click(object sender, EventArgs e)
         {
             string buttonName = ((Label)sender).Name;
 
-            // Increment the click count
-            clickCount++;
-
             if (buttonName == LabelInfo.Text)
-            {
-                clickCount = 1;
                 return;
-            }
+
+            // Increment
+            clickCount++;
 
             if (clickCount == 1)
             {
                 LabelInfo.Text = buttonName;
                 Keybind[0] = buttonName;
+                return;
             }
             else if (clickCount == 2)
             {
@@ -84,6 +85,20 @@ namespace QuickerChat.Forms
                     Keybind[1] = buttonName;
                     clickCount = 0;
                 }
+            }
+        }
+        #endregion
+
+        #region TextChanged
+        private void LabelInfo_TextChanged(object sender, EventArgs e)
+        {
+            if (LabelInfo.Text == "No Keybind Set")
+            {
+                LabelInfo.ForeColor = Color.Red;
+            }
+            else
+            {
+                LabelInfo.ForeColor = Color.Black;
             }
         }
         #endregion

@@ -1,8 +1,10 @@
 ﻿using SharpDX.DirectInput;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -36,7 +38,7 @@ namespace QuickerChat.Forms
         /// <summary>
         /// Form for changing keybindings
         /// </summary>
-        private static ChangeKeybindForm _changeKeybindForm;
+        private static readonly ChangeKeybindForm _changeKeybindForm = new ChangeKeybindForm();
 
         /// <summary>
         /// Text to be used for spamming
@@ -46,7 +48,38 @@ namespace QuickerChat.Forms
         /// <summary>
         /// String representing the selected keybind
         /// </summary>
-        public static string[] Keybind { get; internal set; } = new string[2];
+        public static string[] Keybind { get; set; } = new string[2];
+
+        /// <summary>
+        /// Gets the states of all buttons on the gamepad
+        /// </summary>
+        /// <param name="state">The current state of the gamepad.</param>
+        /// <returns>A dictionary containing the names and states of all buttons, along with a summary of whether any button is pressed</returns>
+        private Dictionary<string, bool> GetButtonStates(JoystickState state)
+        {
+            return new Dictionary<string, bool>
+            {
+                {"DPadUp", state.PointOfViewControllers[0] == 0},
+                {"DPadRight", state.PointOfViewControllers[0] == 9000},
+                {"DPadDown", state.PointOfViewControllers[0] == 18000},
+                {"DPadLeft", state.PointOfViewControllers[0] == 27000},
+                {"Square", state.Buttons[0]},
+                {"Cross", state.Buttons[1]},
+                {"Circle", state.Buttons[2]},
+                {"Triangle", state.Buttons[3]},
+                {"L1", state.Buttons[4]},
+                {"R1", state.Buttons[5]},
+                {"L2", state.Buttons[6]},
+                {"R2", state.Buttons[7]},
+                {"Share", state.Buttons[8]},
+                {"Start", state.Buttons[9]},
+                {"L3", state.Buttons[10]},
+                {"R3", state.Buttons[11]},
+                {"PS", state.Buttons[12]},
+                {"Touchpad", state.Buttons[13]},
+                {"Mute", state.Buttons[14]}
+            };
+        }
         #endregion
 
         #region MainForm
@@ -81,11 +114,14 @@ namespace QuickerChat.Forms
                     }
                 }
 
+                // Update UI
                 if (_joystick != null)
                 {
-                    LabelController.Text = $"Controller Connected\n{_directInput}";
+                    // Label
+                    LabelController.Text = $"Controller Connected\n{_joystick.Information.InstanceName}";
                     LabelController.ForeColor = Color.Green;
 
+                    // GroupBox
                     GroupBoxPresets.Enabled = true;
                     ButtonSearchController.Enabled = false;
                     ButtonDisconnectController.Enabled = true;
@@ -95,9 +131,11 @@ namespace QuickerChat.Forms
                 }
                 else
                 {
+                    // Label
                     LabelController.Text = "No Controller Found";
                     LabelController.ForeColor = Color.Red;
-
+                    
+                    // GroupBox
                     GroupBoxPresets.Enabled = false;
                     ButtonSearchController.Enabled = true;
                     ButtonDisconnectController.Enabled = false;
@@ -129,41 +167,17 @@ namespace QuickerChat.Forms
                     // Poll
                     _joystick.Poll();
 
-                    // Get the current state
+                    // Get the current controller state
                     JoystickState state = _joystick.GetCurrentState();
 
-                    // DPad
-                    bool dPadUpPressed = state.PointOfViewControllers[0] == 0;
-                    bool dPadRightPressed = state.PointOfViewControllers[0] == 9000;
-                    bool dPadDownPressed = state.PointOfViewControllers[0] == 18000;
-                    bool dPadLeftPressed = state.PointOfViewControllers[0] == 27000;
+                    // Get button states
+                    Dictionary<string, bool> buttonStates = GetButtonStates(state);
 
-                    // Symbol
-                    bool squarePressed = state.Buttons[0];
-                    bool crossPressed = state.Buttons[1];
-                    bool circlePressed = state.Buttons[2];
-                    bool trianglePressed = state.Buttons[3];
+                    // Check
+                    bool isKeybind0Pressed = Keybind[0] != null && buttonStates.TryGetValue(Keybind[0], out bool value0) && value0;
+                    bool isKeybind1Pressed = Keybind[1] != null && buttonStates.TryGetValue(Keybind[1], out bool value1) && value1;
 
-                    // Trigger
-                    bool L1Pressed = state.Buttons[4];
-                    bool R1Pressed = state.Buttons[5];
-                    bool L2Pressed = state.Buttons[6];
-                    bool R2Pressed = state.Buttons[7];
-
-                    // Share & Start
-                    bool sharePressed = state.Buttons[8];
-                    bool startPressed = state.Buttons[9];
-
-                    // Joystick Buttons
-                    bool L3Pressed = state.Buttons[10];
-                    bool R3Pressed = state.Buttons[11];
-
-                    // Rest
-                    bool PSPressed = state.Buttons[12];
-                    bool touchpadPressed = state.Buttons[13];
-                    bool mutePressed = state.Buttons[14];
-
-                    if (Keybind[0] != null && Keybind[1] != null)
+                    if (isKeybind0Pressed && isKeybind1Pressed)
                     {
                         StartSpam();
                         Thread.Sleep(200);
@@ -185,16 +199,16 @@ namespace QuickerChat.Forms
             try
             {
                 // Find the Rocket League process
-                //var process = Process.GetProcessesByName("RocketLeague").FirstOrDefault();
+                var process = Process.GetProcessesByName("RocketLeague").FirstOrDefault();
 
-                //if (process == null)
-                //    return;
+                if (process == null)
+                    return;
 
-                //// Wait for process to be ready for input
-                //process.WaitForInputIdle();
+                // Wait for process to be ready for input
+                process.WaitForInputIdle();
 
-                //// Set focus to Rocket League window (to be sure)
-                //SetForegroundWindow(process.MainWindowHandle);
+                // Set focus to Rocket League window (to be sure)
+                SetForegroundWindow(process.MainWindowHandle);
 
                 // Send key presses
                 for (var i = 0; i < 3; i++)
@@ -221,9 +235,17 @@ namespace QuickerChat.Forms
             Enabled = false;
 
             // Open keybind change form
-            _changeKeybindForm = new ChangeKeybindForm();
-            _changeKeybindForm.FormClosed += (s, args) => { Enabled = true; }; // Re-enable main form when KeybindForm is closed
+            _changeKeybindForm.FormClosed += ChangeKeybindForm_FormClosed;
             _changeKeybindForm.Show();
+        }
+        private void ChangeKeybindForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // Re-enable main form when KeybindForm is closed
+            Enabled = true;
+
+            // Enable background loop
+            _isBackgroundWorkerLoop = true;
+            _backgroundWorker.RunWorkerAsync();
         }
         #endregion
 

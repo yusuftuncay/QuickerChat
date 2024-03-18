@@ -38,7 +38,7 @@ namespace QuickerChat.Forms
         /// <summary>
         /// Form for changing keybindings
         /// </summary>
-        private static readonly ChangeKeybindForm _changeKeybindForm = new ChangeKeybindForm();
+        private static ChangeKeybindForm _changeKeybindForm;
 
         /// <summary>
         /// Text to be used for spamming
@@ -235,6 +235,7 @@ namespace QuickerChat.Forms
             Enabled = false;
 
             // Open keybind change form
+            _changeKeybindForm = new ChangeKeybindForm();
             _changeKeybindForm.FormClosed += ChangeKeybindForm_FormClosed;
             _changeKeybindForm.Show();
         }

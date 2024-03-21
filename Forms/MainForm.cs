@@ -50,6 +50,8 @@ namespace QuickerChat.Forms
         /// </summary>
         public static string[] Keybind { get; set; } = new string[2];
 
+        private static int counter = 0;
+
         /// <summary>
         /// Gets the states of all buttons on the gamepad
         /// </summary>
@@ -176,11 +178,36 @@ namespace QuickerChat.Forms
                     bool isKeybind0Pressed = Keybind[0] != null && buttonStates.TryGetValue(Keybind[0], out bool value0) && value0;
                     bool isKeybind1Pressed = Keybind[1] != null && buttonStates.TryGetValue(Keybind[1], out bool value1) && value1;
 
-                    if (!isKeybind0Pressed && !isKeybind1Pressed)
+                    if (isKeybind0Pressed && isKeybind1Pressed)
                     {
-                        BeginInvoke((MethodInvoker)delegate {
-                            StartSpam();
-                        });
+                        counter = 0;
+                        Invoke((MethodInvoker)(() =>
+                        {
+                            // Find the Rocket League process
+                            var process = Process.GetProcessesByName("RocketLeague").FirstOrDefault();
+
+                            if (process == null)
+                                return;
+
+                            // Wait for process to be ready for input
+                            process.WaitForInputIdle();
+
+                            // Set focus to Rocket League window (to be sure)
+                            SetForegroundWindow(process.MainWindowHandle);
+
+                            // Set text to spam
+                            Clipboard.SetText(textToSpam);
+
+                            // Send 3 key presses
+                            while (counter < 3)
+                            {
+                                SendKeys.Send("T^v{ENTER}");
+                                counter++;
+                            }
+
+                            // Clear clipboard
+                            Clipboard.Clear();
+                        }));
                     }
 
                     Thread.Sleep(10);
@@ -189,34 +216,6 @@ namespace QuickerChat.Forms
                     CleanStates();
                 }
             }
-        }
-        private void StartSpam()
-        {
-            try
-            {
-                // Find the Rocket League process
-                var process = Process.GetProcessesByName("RocketLeague").FirstOrDefault();
-
-                if (process == null)
-                    return;
-
-                // Wait for process to be ready for input
-                process.WaitForInputIdle();
-
-                // Set focus to Rocket League window (to be sure)
-                SetForegroundWindow(process.MainWindowHandle);
-
-                // Set text to spam
-                Clipboard.SetText(textToSpam);
-
-                // Send 3 key presses
-                for (var i = 0; i < 3; i++)
-                {
-                    SendKeys.SendWait("T^v{ENTER}");
-                }
-
-                Clipboard.Clear();
-            } catch (Exception) { }
         }
         #endregion
 

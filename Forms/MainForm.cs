@@ -16,34 +16,34 @@ namespace QuickerChat.Forms
     {
         #region Variables
         /// <summary>
-        /// Background worker for continuous _directInput polling
+        /// Background worker for continuous directInput polling
         /// </summary>
-        private static BackgroundWorker _backgroundWorker;
+        private static BackgroundWorker backgroundWorker;
 
         /// <summary>
-        /// XInput DirectInput for handling _directInput input
+        /// SharpDX.DirectInput for handling directInput input
         /// </summary>
-        private static DirectInput _directInput;
+        private static DirectInput directInput;
 
         /// <summary>
-        /// XInput Joystick for handling _directInput input
+        /// SharpDX.Joystick for handling directInput input
         /// </summary>
-        private static Joystick _joystick;
+        private static Joystick joystick;
 
         /// <summary>
         /// Flag indicating whether the background worker loop is running
         /// </summary>
-        private static bool _isBackgroundWorkerLoop;
+        private static bool isBackgroundWorkerLoop;
 
         /// <summary>
         /// Form for changing keybindings
         /// </summary>
-        private static ChangeKeybindForm _changeKeybindForm;
+        private static ChangeKeybindForm changeKeybindForm;
 
         /// <summary>
         /// Text to be used for spamming
         /// </summary>
-        private static string _textToSpam;
+        private static string textToSpam;
 
         /// <summary>
         /// String representing the selected keybind
@@ -53,8 +53,8 @@ namespace QuickerChat.Forms
         /// <summary>
         /// Gets the states of all buttons on the gamepad
         /// </summary>
-        /// <param name="state">The current state of the gamepad.</param>
-        /// <returns>A dictionary containing the names and states of all buttons, along with a summary of whether any button is pressed</returns>
+        /// <param name="state">The current state of the gamepad</param>
+        /// <returns>A dictionary containing the names and states of all buttons, along with a value of whether a button is pressed</returns>
         private Dictionary<string, bool> GetButtonStates(JoystickState state)
         {
             return new Dictionary<string, bool>
@@ -109,16 +109,16 @@ namespace QuickerChat.Forms
                     // Get First Joystick
                     foreach (var deviceInstance in directInput.GetDevices(DeviceClass.GameControl, DeviceEnumerationFlags.AllDevices))
                     {
-                        _joystick = new Joystick(directInput, deviceInstance.InstanceGuid);
+                        joystick = new Joystick(directInput, deviceInstance.InstanceGuid);
                         break;
                     }
                 }
 
                 // Update UI
-                if (_joystick != null)
+                if (joystick != null)
                 {
                     // Label
-                    LabelController.Text = $"Controller Connected\n{_joystick.Information.InstanceName}";
+                    LabelController.Text = $"Controller Connected\n{joystick.Information.InstanceName}";
                     LabelController.ForeColor = Color.Green;
 
                     // GroupBox
@@ -126,8 +126,8 @@ namespace QuickerChat.Forms
                     ButtonSearchController.Enabled = false;
                     ButtonDisconnectController.Enabled = true;
                     ButtonChangeKeybind.Enabled = true;
-                    _isBackgroundWorkerLoop = true;
-                    _textToSpam = RadioButtonPreset1.Text;
+                    isBackgroundWorkerLoop = true;
+                    textToSpam = RadioButtonPreset1.Text;
                 }
                 else
                 {
@@ -140,35 +140,34 @@ namespace QuickerChat.Forms
                     ButtonSearchController.Enabled = true;
                     ButtonDisconnectController.Enabled = false;
                     ButtonChangeKeybind.Enabled = false;
-                    _isBackgroundWorkerLoop = false;
+                    isBackgroundWorkerLoop = false;
                     return;
                 }
 
-                // Acquire the _joystick
-                _joystick.Properties.BufferSize = 16;
-                _joystick.Acquire();
+                // Acquire the joystick
+                joystick.Properties.BufferSize = 128;
+                joystick.Acquire();
 
                 // Start a background worker to continuously poll the controller
-                _backgroundWorker = new BackgroundWorker();
-                _backgroundWorker.DoWork += BackgroundWorker_DoWork;
-                _backgroundWorker.RunWorkerAsync();
-
+                backgroundWorker = new BackgroundWorker();
+                backgroundWorker.DoWork += BackgroundWorker_DoWork;
+                backgroundWorker.RunWorkerAsync();
             } catch (Exception) { }
         }
         private void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            while (_isBackgroundWorkerLoop)
+            while (isBackgroundWorkerLoop)
             {
                 try
                 {
-                    if (_joystick == null)
+                    if (joystick == null)
                         return;
 
                     // Poll
-                    _joystick.Poll();
+                    joystick.Poll();
 
                     // Get the current controller state
-                    JoystickState state = _joystick.GetCurrentState();
+                    JoystickState state = joystick.GetCurrentState();
 
                     // Get button states
                     Dictionary<string, bool> buttonStates = GetButtonStates(state);
@@ -177,23 +176,20 @@ namespace QuickerChat.Forms
                     bool isKeybind0Pressed = Keybind[0] != null && buttonStates.TryGetValue(Keybind[0], out bool value0) && value0;
                     bool isKeybind1Pressed = Keybind[1] != null && buttonStates.TryGetValue(Keybind[1], out bool value1) && value1;
 
-                    if (isKeybind0Pressed && isKeybind1Pressed)
+                    if (!isKeybind0Pressed && !isKeybind1Pressed)
                     {
-                        StartSpam();
-                        Thread.Sleep(200);
+                        BeginInvoke((MethodInvoker)delegate {
+                            StartSpam();
+                        });
                     }
 
                     Thread.Sleep(10);
-                }
-                catch (Exception)
+                } catch (Exception)
                 {
                     CleanStates();
                 }
             }
         }
-        #endregion
-
-        #region Spam Methods
         private void StartSpam()
         {
             try
@@ -210,9 +206,16 @@ namespace QuickerChat.Forms
                 // Set focus to Rocket League window (to be sure)
                 SetForegroundWindow(process.MainWindowHandle);
 
-                // Send key presses
+                // Set text to spam
+                Clipboard.SetText(textToSpam);
+
+                // Send 3 key presses
                 for (var i = 0; i < 3; i++)
-                    SendKeys.SendWait($"T{_textToSpam}{{ENTER}}");
+                {
+                    SendKeys.SendWait("T^v{ENTER}");
+                }
+
+                Clipboard.Clear();
             } catch (Exception) { }
         }
         #endregion
@@ -229,24 +232,24 @@ namespace QuickerChat.Forms
         private void ButtonChangeKeybind_Click(object sender, EventArgs e)
         {
             // Stop Loop
-            _isBackgroundWorkerLoop = false;
+            isBackgroundWorkerLoop = false;
 
-            // Disable Form2
+            // Disable MainForm
             Enabled = false;
 
-            // Open keybind change form
-            _changeKeybindForm = new ChangeKeybindForm();
-            _changeKeybindForm.FormClosed += ChangeKeybindForm_FormClosed;
-            _changeKeybindForm.Show();
+            // Open ChangeKeybindForm
+            changeKeybindForm = new ChangeKeybindForm();
+            changeKeybindForm.FormClosed += ChangeKeybindForm_FormClosed;
+            changeKeybindForm.Show();
         }
         private void ChangeKeybindForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // Re-enable main form when KeybindForm is closed
+            // Re-enable MainForm when ChangeKeybindForm is closed
             Enabled = true;
 
             // Enable background loop
-            _isBackgroundWorkerLoop = true;
-            _backgroundWorker.RunWorkerAsync();
+            isBackgroundWorkerLoop = true;
+            backgroundWorker.RunWorkerAsync();
         }
         #endregion
 
@@ -256,64 +259,21 @@ namespace QuickerChat.Forms
             // Check for custom input
             if (RadioButtonCustomPreset.Checked)
             {
-                _textToSpam = null;
+                textToSpam = null;
                 TextBoxCustom.Enabled = true;
             } else
             {
-                _textToSpam = ((RadioButton)sender).Text;
+                textToSpam = ((RadioButton)sender).Text;
                 TextBoxCustom.Enabled = false;
             }
         }
         private void TextBoxCustom_TextChanged(object sender, EventArgs e)
         {
-            _textToSpam = TextBoxCustom.Text;
+            textToSpam = TextBoxCustom.Text;
         }
         #endregion
 
-        #region Dispose
-        private void CleanStates()
-        {
-            // Dispose background worker
-            if (_backgroundWorker != null)
-            {
-                _backgroundWorker.DoWork -= BackgroundWorker_DoWork;
-                _backgroundWorker.Dispose();
-                _backgroundWorker = null;
-            }
-
-            // Dispose _directInput
-            _directInput?.Dispose();
-            _directInput = null;
-
-            // Dispose _joystick
-            _joystick?.Dispose();
-            _joystick = null;
-
-            // Update UI label on UI thread
-            Invoke((MethodInvoker)(() =>
-            {
-                LabelController.Text = "No Controller Connected";
-                LabelController.ForeColor = Color.Red;
-
-                // Disable GroupBox
-                GroupBoxPresets.Enabled = false;
-
-                // Make button visible
-                ButtonSearchController.Enabled = true;
-                ButtonDisconnectController.Enabled = false;
-                ButtonChangeKeybind.Enabled = false;
-            }));
-
-            // Stop the loop
-            _isBackgroundWorkerLoop = false;
-
-            // Reset preset selection
-            RadioButtonPreset1.Checked = true;
-            _textToSpam = RadioButtonPreset1.Text;
-        }
-        #endregion
-
-        #region MenuStrip MainPage
+        #region MenuStrip
         private void VersionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // Get the assembly version
@@ -324,6 +284,7 @@ namespace QuickerChat.Forms
         }
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            CleanStates();
             Dispose(true);
             Close();
         }
@@ -343,6 +304,48 @@ namespace QuickerChat.Forms
             {
                 MessageBox.Show("An error occurred: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+        #endregion
+
+        #region CleanStates
+        private void CleanStates()
+        {
+            // Dispose backgroundWorker
+            if (backgroundWorker != null)
+            {
+                backgroundWorker.DoWork -= BackgroundWorker_DoWork;
+                backgroundWorker.Dispose();
+                backgroundWorker = null;
+            }
+
+            // Dispose directInput
+            directInput?.Dispose();
+            directInput = null;
+
+            // Dispose joystick
+            joystick?.Dispose();
+            joystick = null;
+
+            Invoke((MethodInvoker)(() =>
+            {
+                LabelController.Text = "No Controller Connected";
+                LabelController.ForeColor = Color.Red;
+
+                // Disable GroupBox
+                GroupBoxPresets.Enabled = false;
+
+                // Make button visible
+                ButtonSearchController.Enabled = true;
+                ButtonDisconnectController.Enabled = false;
+                ButtonChangeKeybind.Enabled = false;
+            }));
+
+            // Stop the loop
+            isBackgroundWorkerLoop = false;
+
+            // Reset preset selection
+            RadioButtonPreset1.Checked = true;
+            textToSpam = RadioButtonPreset1.Text;
         }
         #endregion
     }

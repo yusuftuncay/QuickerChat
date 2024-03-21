@@ -50,8 +50,6 @@ namespace QuickerChat.Forms
         /// </summary>
         public static string[] Keybind { get; set; } = new string[2];
 
-        private static int counter = 0;
-
         /// <summary>
         /// Gets the states of all buttons on the gamepad
         /// </summary>
@@ -180,7 +178,6 @@ namespace QuickerChat.Forms
 
                     if (isKeybind0Pressed && isKeybind1Pressed)
                     {
-                        counter = 0;
                         Invoke((MethodInvoker)(() =>
                         {
                             // Find the Rocket League process
@@ -195,18 +192,13 @@ namespace QuickerChat.Forms
                             // Set focus to Rocket League window (to be sure)
                             SetForegroundWindow(process.MainWindowHandle);
 
-                            // Set text to spam
-                            Clipboard.SetText(textToSpam);
-
                             // Send 3 key presses
-                            while (counter < 3)
+                            for (int i = 0; i < 3; i++)
                             {
-                                SendKeys.Send("T^v{ENTER}");
-                                counter++;
+                                SendKeys.Send("T");
+                                SendKeys.Send(textToSpam);
+                                SendKeys.Send("{ENTER}");
                             }
-
-                            // Clear clipboard
-                            Clipboard.Clear();
                         }));
                     }
 

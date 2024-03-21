@@ -195,9 +195,7 @@ namespace QuickerChat.Forms
                             // Send 3 key presses
                             for (int i = 0; i < 3; i++)
                             {
-                                SendKeys.Send("T");
-                                SendKeys.Send(textToSpam);
-                                SendKeys.Send("{ENTER}");
+                                SendKeys.SendWait("T" + textToSpam + "{ENTER}");
                             }
                         }));
                     }
